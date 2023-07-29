@@ -1,0 +1,28 @@
+# Base requiremtents
+-r ./base.txt
+
+# Debugging
+ipdb==0.13.9
+
+# Tools
+django-debug-toolbar==3.5.0
+
+# Testing
+mypy==0.971
+pytest==7.1.2
+pytest-sugar==0.9.5
+pytest-mock==3.8.1
+pytest-cov==3.0.0
+pytest-django==4.5.2
+requests-mock==1.9.3
+django-mock-queries==2.1.7
+factory-boy==3.2.1
+model-bakery==1.6.0
+
+# Code quality
+autopep8==1.6.0
+flake8==4.0.1
+pylint==2.14.5
+
+# Docs
+sphinx==5.0.2

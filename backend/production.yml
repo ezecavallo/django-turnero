@@ -1,0 +1,72 @@
+version: "3.8"
+name: turnero-core
+
+services:
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: turnero_production_django
+    container_name: django
+    depends_on:
+      - redis
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    command: /start
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./compose/production/nginx/Dockerfile
+    image: turnero_production_nginx
+    depends_on:
+      - django
+      - frontend
+    volumes:
+      - ./compose/production/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/nginx/ssl
+      - ./certbot/data:/var/www/certbot
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+      - 3000:3000/tcp
+      - 5555:5555/tcp
+
+  # redis:
+  #   image: redis:6.0
+  #   container_name: redis
+
+  # certbot:
+  #   image: certbot/certbot:latest
+  #   command: certonly --webroot --webroot-path=/var/www/certbot --email ezecavallo@gmail.com --agree-tos --no-eff-email -d host.com  -d www.host.com --staging
+  #   volumes:
+  #     - ./certbot/conf:/etc/letsencrypt
+  #     - ./certbot/logs:/var/log/letsencrypt
+  #     - ./certbot/data:/var/www/certbot
+
+  # celeryworker:
+  #   <<: *django
+  #   image: turnero_production_celeryworker
+  #   container_name: celeryworker
+  #   depends_on:
+  #     - redis
+  #   ports: []
+  #   command: /start-celeryworker
+
+  # celerybeat:
+  #   <<: *django
+  #   image: turnero_production_celerybeat
+  #   container_name: celerybeat
+  #   depends_on:
+  #     - redis
+  #   ports: []
+  #   command: /start-celerybeat
+
+  # flower:
+  #   <<: *django
+  #   image: turnero_production_flower
+  #   container_name: flower
+  #   # ports:
+  #   # - "5555:5555"
+  #   command: /start-flower

@@ -1,0 +1,3 @@
+"""Subscriptions urls."""
+
+urlpatterns = []

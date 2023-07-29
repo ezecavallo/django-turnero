@@ -1,0 +1,9 @@
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# Django
+DJANGO_SETTINGS_MODULE=config.settings.local
+
+# Flower
+CELERY_FLOWER_USER=
+CELERY_FLOWER_PASSWORD=

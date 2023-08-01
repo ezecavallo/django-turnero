@@ -27,16 +27,6 @@ class Book(BaseModel):
 
     is_active = models.BooleanField(default=True)
 
-    price = models.DecimalField(
-        _("price"),
-        max_digits=24,
-        decimal_places=14,
-        help_text=_("The default price for events of this book."),
-        validators=[
-            MinValueValidator(0)
-        ]
-    )
-
     deposit_percentage = models.SmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )

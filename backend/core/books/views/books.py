@@ -51,12 +51,12 @@ class BookModelViewSet(GetObjectSelectForUpdateMixin,
         """Get permissions based on actions"""
 
         perms = []
-        if self.action in ['create', 'update', 'retrieve', 'delete']:
+        if self.action in ['list']:
+            perms.append(AllowAny)
+        else:
             perms.extend([business_perms.IsAdminOrBusinessMemberObject,
                          business_perms.IsAdminOrBusinessMember,
                          CustomDjangoModelPermissions])
-        else:
-            perms.append(AllowAny)
         return [permission() for permission in perms]
 
     def get_queryset(self):

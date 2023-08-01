@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 # Permissions
+from rest_framework.permissions import AllowAny
 from core.business.permissions import IsAdminOrBusinessMemberObject
 from core.utils.permissions import CustomDjangoModelPermissions
 
@@ -24,16 +25,27 @@ class BusinessModelViewSet(viewsets.GenericViewSet,
     ViewSet Model for viewing and editing business.
     """
     serializer_class = serializers.BusinessSerializer
-    permission_classes = [IsAdminOrBusinessMemberObject, CustomDjangoModelPermissions]
+    # permission_classes = []
+    permission_classes = []
     lookup_field = "slug_name"
 
     def get_queryset(self):
         """Get business queryset"""
-
         user = self.request.user
-        if user.is_superuser:
+
+        if user.is_superuser or not user.is_authenticated:
             return Business.objects.all()
         return Business.objects.filter_by_members([user])
+
+    def get_permissions(self):
+        """Get permissions based on actions"""
+
+        perms = []
+        if self.action in ['retrieve']:
+            perms.append(AllowAny)
+        else:
+            perms.extend([IsAdminOrBusinessMemberObject, CustomDjangoModelPermissions])
+        return [permission() for permission in perms]
 
     def get_serializer_class(self):
         print(self.action)
@@ -43,7 +55,7 @@ class BusinessModelViewSet(viewsets.GenericViewSet,
             if self.request.user.is_staff:
                 return serializers.BusinessSerializer
             else:
-                return serializers.PublicBusinessSerializer
+                return serializers.BusinessPublicSerializer
         return super().get_serializer_class()
 
     @action(methods=['get'], detail=True)

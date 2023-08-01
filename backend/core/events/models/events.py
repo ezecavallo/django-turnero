@@ -132,7 +132,8 @@ class Event(BaseModel):
                 name="exclude_overlapping_datetimes",
                 expressions=[
                     (models.Func("start_at", "close_at", function="tstzrange",
-                     output_field=DateTimeRangeField()), RangeOperators.OVERLAPS),
+                                 output_field=DateTimeRangeField()), RangeOperators.OVERLAPS),
+                    ('book', RangeOperators.EQUAL),
                 ],
             )
         ]

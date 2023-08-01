@@ -1,4 +1,4 @@
-"""Companies models admin."""
+"""Business models admin."""
 
 # Django
 from django.contrib import admin

@@ -1,4 +1,4 @@
-"""Companies permissions"""
+"""Business permissions"""
 
 # REST Framework
 from rest_framework.permissions import BasePermission

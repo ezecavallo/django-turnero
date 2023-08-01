@@ -1,4 +1,4 @@
-"""Companies urls."""
+"""Events urls."""
 
 # Django
 from django.urls import path, include
@@ -18,6 +18,6 @@ router.register(
 
 
 urlpatterns = [
-    # companies urls
+    # events urls
     path('api/', include((router.urls, 'events')))
 ]

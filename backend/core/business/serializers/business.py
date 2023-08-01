@@ -7,7 +7,7 @@ from rest_framework import serializers
 from core.subscriptions.serializers import CustomerSerializer
 
 
-class PublicBusinessSerializer(serializers.Serializer):
+class BusinessPublicSerializer(serializers.Serializer):
     """Business serializer"""
 
     name = serializers.CharField(read_only=True)

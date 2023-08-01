@@ -10,7 +10,6 @@ from rest_framework import serializers
 # Models
 from core.books.models import Duration
 from core.events.models import Event
-from core.books.models import Book
 
 # Exceptions
 from core.events import exceptions
@@ -21,15 +20,15 @@ class EventValidation(serializers.Serializer):
 
     start_at = serializers.DateTimeField()
     close_at = serializers.DateTimeField()
-    book = serializers.HiddenField(default='')
+    duration = serializers.HiddenField(default='')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         business = self.context.get('business')
-        self.fields['book'] = serializers.SlugRelatedField(
+        self.fields['duration'] = serializers.SlugRelatedField(
             slug_field='uuid',
-            queryset=Book.objects.filter_by_business(business)
+            queryset=Duration.objects.filter_by_business(business)
         )
 
     def validate(self, attrs):
@@ -37,24 +36,27 @@ class EventValidation(serializers.Serializer):
 
         start_at = attrs.get('start_at')
         close_at = attrs.get('close_at')
-        book = attrs.get('book')
-
+        duration = attrs.get('duration')
+        self.book = duration.book
+        print(start_at, close_at)
+        print(duration)
+        print(self.book)
         # Validate valid hours
-        events = Event.objects.filter_by_book(book).filter_in_between_hours(start_at, close_at)
+        events = Event.objects.filter_by_book(self.book).filter_in_between_hours(start_at, close_at)
         if events:
             raise exceptions.ConflictSchedule(_("The event has schedule conflicts."))
 
         # Validate valid context hours in schedule
-        previous_event = Event.objects.filter_by_book(book).filter_previous_event(start_at).first()
+        previous_event = Event.objects.filter_by_book(self.book).filter_previous_event(start_at).first()
         if previous_event:
-            min_duration = Duration.objects.filter_by_book(book).get_min_duration()
+            min_duration = Duration.objects.filter_by_book(self.book).get_min_duration()
             time_between_events = abs((previous_event.close_at - start_at).total_seconds() / 60)
             if time_between_events < min_duration:
                 raise exceptions.ConflictSchedule(_("The start time is invalid."))
 
         # Validate valid duration
-        duration = abs(start_at - close_at).total_seconds() / 60
-        is_valid_duration = Duration.objects.filter_by_book(book).filter(duration=duration)
+        duration_amount = abs(start_at - close_at).total_seconds() / 60
+        is_valid_duration = Duration.objects.filter_by_book(self.book).filter(duration=duration_amount)
         if not is_valid_duration:
             raise exceptions.InvalidDuration(_("The event has an invalid duration."))
 
@@ -140,9 +142,10 @@ class EventCreate(EventValidation):
         """Create event"""
 
         validated_data.pop("price")
-        book = validated_data.get("book")
-        price = book.price
-        deposit_amount = price * book.deposit_percentage / 100 or 0
+        duration = validated_data.pop("duration")
+        print(duration)
+        price = duration.price
+        deposit_amount = price * self.book.deposit_percentage / 100 or 0
 
         validated_data.pop("issued_by")
         user = self.context.get("request").user
@@ -150,7 +153,8 @@ class EventCreate(EventValidation):
         instance = Event.objects.create(
             **validated_data,
             price=price,
-            deposit_percentage=book.deposit_percentage,
+            book=self.book,
+            deposit_percentage=self.book.deposit_percentage,
             deposit_amount=deposit_amount,
             issued_by=user if user.is_authenticated else None
         )
